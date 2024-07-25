@@ -54,11 +54,22 @@ object DialogHelper {
 
     }
 
+    fun showFinalTransactionDialog(finalTransactionAmount:String,context: Context,onProceed:()->Unit){
+        val dialogBuilder = AlertDialog.Builder(context)
+            .setTitle("Final transaction amount is : $finalTransactionAmount")
+            .setPositiveButton("Proceed") { _, _ ->
+                onProceed.invoke()
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+        dialogBuilder.show()
+    }
+
     fun hideLoading(activity: Activity) {
         activity.runOnUiThread {
             loadingDialog?.hide()
         }
     }
-
 
 }

@@ -12,6 +12,9 @@
         <action
             android:id="@+id/action_enterAmountDataFragment_to_swipeCardFragment"
             app:destination="@id/swipeCardFragment" />
+        <action
+            android:id="@+id/action_enterAmountDataFragment_to_printReceiptFragment"
+            app:destination="@id/printReceiptFragment" />
     </fragment>
     <fragment
         android:id="@+id/swipeCardFragment"

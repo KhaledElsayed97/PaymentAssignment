@@ -3,6 +3,8 @@ package com.zeal.paymentassignment.ui
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,9 +47,11 @@ class EnterAmountDataFragment : Fragment() {
             ContextCompat.RECEIVER_EXPORTED
         )
 
-        zealBroadcastReceiver.finalTransactionAmount.observe(viewLifecycleOwner, Observer { finalTransactionAmount ->
-            onFinalTransactionReceived(finalTransactionAmount.toFloat())
-        })
+        zealBroadcastReceiver.finalTransactionAmount.observe(
+            viewLifecycleOwner,
+            Observer { finalTransactionAmount ->
+                onFinalTransactionReceived(finalTransactionAmount.toFloat())
+            })
 
         binding.btnConfirm.setOnClickListener {
             val amount = binding.tvEnterAmount.text.toString()
@@ -57,9 +61,15 @@ class EnterAmountDataFragment : Fragment() {
                     if (amountF == 0.0f)
                         Toast.makeText(context, "cant be zero", Toast.LENGTH_SHORT).show()
                     else {
-                        FlowDataObject.getInstance().amount = amountF;
-                        sendTransactionDetails(amountF.toString())
-                        DialogHelper.showLoadingDialog(requireActivity(), "Awaiting final transaction amount")
+                        FlowDataObject.getInstance().amount = amountF
+                        openLoyaltyApp()
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            sendTransactionDetails(amountF.toString())
+                        }, 1000)
+                        DialogHelper.showLoadingDialog(
+                            requireActivity(),
+                            "Awaiting final transaction amount"
+                        )
                     }
                 } catch (e: Exception) {
                     Toast.makeText(context, "please add valid number", Toast.LENGTH_SHORT).show()
@@ -76,10 +86,19 @@ class EnterAmountDataFragment : Fragment() {
         activity?.sendBroadcast(intent)
     }
 
+    private fun openLoyaltyApp() {
+        val launchIntent: Intent? =
+            activity?.packageManager?.getLaunchIntentForPackage("com.khaleddev.zealapp")
+        launchIntent?.let { startActivity(it) }
+    }
+
     private fun onFinalTransactionReceived(finalTransactionAmount: Float) {
         activity?.let { DialogHelper.hideLoading(it) }
         FlowDataObject.getInstance().amount = finalTransactionAmount
-        DialogHelper.showFinalTransactionDialog(finalTransactionAmount.toString(),requireContext()) {
+        DialogHelper.showFinalTransactionDialog(
+            finalTransactionAmount.toString(),
+            requireContext()
+        ) {
             if (finalTransactionAmount == 0f)
                 findNavController().navigate(R.id.action_enterAmountDataFragment_to_printReceiptFragment)
             else
